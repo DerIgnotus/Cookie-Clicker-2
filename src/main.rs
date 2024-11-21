@@ -19,7 +19,6 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     };
 
     commands.spawn((Camera2dBundle::default(), components::Cookie {
-        score: 0,
         give_amount: 1.0,
     }));
     commands.spawn(SpriteBundle {
@@ -39,25 +38,28 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         },
         components::ScoreText,
     ));
+
+    commands.insert_resource(components::Score(0));
 }
 
 fn check_click(
     q_windows: Query<&Window, With<PrimaryWindow>>,
     buttons: Res<ButtonInput<MouseButton>>,
-    mut cookie_query: Query<&mut components::Cookie>
+    mut cookie_query: Query<&mut components::Cookie>,
+    mut score: ResMut<components::Score>,
 ) {
     for button in buttons.get_just_pressed() {
         if button == &MouseButton::Left {
             if check_position(&q_windows) {
-                cookie_pressed(&mut cookie_query);
+                cookie_pressed(&mut score, &mut cookie_query);
             }
         }
     }
 }
 
-fn cookie_pressed(cookie_query: &mut Query<&mut components::Cookie>) {
-    for mut cookie in cookie_query.iter_mut() {
-        cookie.score += cookie.give_amount as u32;
+fn cookie_pressed(score: &mut ResMut<components::Score>, cookie_query: &mut Query<&mut components::Cookie>) {
+    for cookie in cookie_query.iter_mut() {
+        score.0 += cookie.give_amount as u32;
     }
 }
 
@@ -72,10 +74,8 @@ fn check_position(q_windows: &Query<&Window, With<PrimaryWindow>>) -> bool {
     return false;
 }
 
-fn update_score(mut query: Query<&mut Text, With<components::ScoreText>>, cookie_query: Query<&components::Cookie>) { 
+fn update_score(mut query: Query<&mut Text, With<components::ScoreText>>, score: Res<components::Score>) { 
     for mut text in query.iter_mut() {
-        for cookie in cookie_query.iter() {
-            text.sections[0].value = format!("Cookies: {:?}", cookie.score);
-        }
+        text.sections[0].value = format!("Cookies: {:?}", score.0);
     }
 }

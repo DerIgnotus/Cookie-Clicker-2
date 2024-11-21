@@ -5,7 +5,9 @@ pub struct ScoreText;
 
 #[derive(Component, Debug)]
 pub struct Cookie {
-    pub score: u32,
     pub give_amount: f32,
 }
+
+#[derive(Resource)]
+pub struct Score(pub u32);
 
